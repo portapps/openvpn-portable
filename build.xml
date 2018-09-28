@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="openvpn" basedir=".">
+
+  <dirname property="app.basedir" file="${ant.file.openvpn}"/>
+  <property name="build.properties" value="${app.basedir}/build.properties"/>
+  <property file="${build.properties}"/>
+
+  <!-- Load Portapps core build -->
+  <property name="core.basedir" location="${app.basedir}\${core.dir}"/>
+  <fail unless="core.basedir" message="Core directory '${core.basedir}' not found in ${core.basedir}"/>
+  <echo message="Core found in ${core.basedir}" level="debug"/>
+
+  <!-- Import build-app.xml  -->
+  <import file="${core.basedir}\.build\build-app.xml"/>
+
+  <!-- Targets -->
+  <target name="release" depends="release.app" description="Release"/>
+
+  <target name="prepare">
+    <echo message="Preparing release..."/>
+
+    <copy file="${extract.path}\$TEMP\tap-windows.exe" todir="${release.path}"/>
+
+    <delete>
+      <fileset dir="${extract.path}\bin" includes="**/openvpnserv*.exe"/>
+    </delete>
+    <delete dir="${extract.path}\$PLUGINSDIR"/>
+    <delete dir="${extract.path}\$TEMP"/>
+    <delete dir="${extract.path}\easy-rsa"/>
+    <delete file="${extract.path}\Uninstall.exe.nsis"/>
+
+    <if>
+      <equals arg1="${atf.arch}" arg2="win32"/>
+      <then>
+        <delete>
+          <fileset dir="${extract.path}\bin" includes="**/*-x64.dll"/>
+        </delete>
+        <rename src="${extract.path}\bin\libcrypto-1_1.dll" dest="${extract.path}\bin\libcrypto-1.dll"/>
+        <rename src="${extract.path}\bin\liblzo2-2_1.dll" dest="${extract.path}\bin\liblzo2-2.dll"/>
+        <rename src="${extract.path}\bin\libpkcs11-helper-1_1.dll" dest="${extract.path}\bin\libpkcs11-helper-1.dll"/>
+        <rename src="${extract.path}\bin\libssl-1_1.dll" dest="${extract.path}\bin\libssl-1.dll"/>
+        <rename src="${extract.path}\bin\openssl_1.exe" dest="${extract.path}\bin\openssl.exe"/>
+        <rename src="${extract.path}\bin\openvpn_1.exe" dest="${extract.path}\bin\openvpn.exe"/>
+        <rename src="${extract.path}\bin\openvpn-gui_1.exe" dest="${extract.path}\bin\openvpn-gui.exe"/>
+      </then>
+      <else>
+        <delete>
+          <fileset dir="${extract.path}\bin" includes="**/*_1.dll"/>
+          <fileset dir="${extract.path}\bin" includes="**/*_1.exe"/>
+        </delete>
+      </else>
+    </if>
+  </target>
+
+</project>
