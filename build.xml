@@ -19,7 +19,7 @@
   <target name="prepare">
     <echo message="Preparing release..."/>
 
-    <copy file="${extract.path}\$TEMP\tap-windows.exe" todir="${release.path}"/>
+    <copy file="${extract.path}\$TEMP\tap-windows.exe" todir="${extract.path}"/>
 
     <delete>
       <fileset dir="${extract.path}\bin" includes="**/openvpnserv*.exe"/>
