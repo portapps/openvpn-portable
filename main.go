@@ -17,7 +17,7 @@ func init() {
 
 func main() {
 	Papp.AppPath = AppPathJoin("app")
-	Papp.DataPath = AppPathJoin("data")
+	Papp.DataPath = CreateFolder(AppPathJoin("data"))
 	Papp.Process = PathJoin(Papp.AppPath, "bin", "openvpn-gui.exe")
 
 	configPath := CreateFolder(PathJoin(Papp.DataPath, "config"))
