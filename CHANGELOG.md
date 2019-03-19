@@ -1,6 +1,10 @@
 # Changelog
 
-## 2.4.7-I601-1 (2019/02/21)
+## 2.4.7-I601-3 (2019/03/19)
+
+* Portapps 1.20.3
+
+## 2.4.7-I601-2 (2019/02/21)
 
 * Upgrade to OpenVPN 2.4.7-I601
 * Add checksums (portapps/portapps#11)
