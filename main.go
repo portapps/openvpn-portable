@@ -7,25 +7,33 @@ import (
 	"runtime"
 
 	. "github.com/portapps/portapps"
+	"github.com/portapps/portapps/pkg/registry"
+	"github.com/portapps/portapps/pkg/utl"
+)
+
+var (
+	app *App
 )
 
 func init() {
-	Papp.ID = "openvpn-portable"
-	Papp.Name = "OpenVPN"
-	Init()
+	var err error
+
+	// Init app
+	if app, err = New("openvpn-portable", "OpenVPN"); err != nil {
+		Log.Fatal().Err(err).Msg("Cannot initialize application. See log file for more info.")
+	}
 }
 
 func main() {
-	Papp.AppPath = AppPathJoin("app")
-	Papp.DataPath = CreateFolder(AppPathJoin("data"))
-	Papp.Process = PathJoin(Papp.AppPath, "bin", "openvpn-gui.exe")
+	utl.CreateFolder(app.DataPath)
+	app.Process = utl.PathJoin(app.AppPath, "bin", "openvpn-gui.exe")
 
-	configPath := CreateFolder(PathJoin(Papp.DataPath, "config"))
-	logPath := CreateFolder(PathJoin(Papp.DataPath, "log"))
+	configPath := utl.CreateFolder(app.DataPath, "config")
+	logPath := utl.CreateFolder(app.DataPath, "log")
 
-	Papp.Args = []string{
+	app.Args = []string{
 		"--exe_path",
-		PathJoin(Papp.AppPath, "bin", "openvpn.exe"),
+		utl.PathJoin(app.AppPath, "bin", "openvpn.exe"),
 		"--config_dir",
 		configPath,
 		"--ext_string",
@@ -37,29 +45,35 @@ func main() {
 		"--append_string",
 		"0",
 	}
-	Papp.WorkingDir = Papp.AppPath
 
 	// Add OpenVPN reg key otherwise a dialog popup
+	regArch := "32"
 	if runtime.GOARCH == "amd64" {
-		RegAdd(RegKey{
-			Key:  `HKLM\SOFTWARE\OpenVPN`,
-			Arch: "64",
-		}, true)
-	} else {
-		RegAdd(RegKey{
-			Key:  `HKLM\SOFTWARE\OpenVPN`,
-			Arch: "32",
-		}, true)
+		regArch = "64"
+	}
+	if err := registry.Add(registry.Key{
+		Key:  `HKLM\SOFTWARE\OpenVPN`,
+		Arch: regArch,
+	}, true); err != nil {
+		Log.Error().Err(err).Msg("Cannot add registry key")
 	}
 
-	regsPath := CreateFolder(PathJoin(Papp.Path, "reg"))
-	guiRegKey := RegExportImport{
+	regsPath := utl.CreateFolder(app.RootPath, "reg")
+	guiRegKey := registry.ExportImport{
 		Key:  `HKCU\Software\OpenVPN-GUI`,
 		Arch: "32",
-		File: PathJoin(regsPath, "OpenVPN-GUI.reg"),
+		File: utl.PathJoin(regsPath, "OpenVPN-GUI.reg"),
 	}
 
-	ImportRegKey(guiRegKey)
-	Launch(os.Args[1:])
-	ExportRegKey(guiRegKey)
+	if err := registry.ImportKey(guiRegKey); err != nil {
+		Log.Error().Err(err).Msg("Cannot import registry key")
+	}
+
+	defer func() {
+		if err := registry.ExportKey(guiRegKey); err != nil {
+			Log.Error().Err(err).Msg("Cannot export registry key")
+		}
+	}()
+
+	app.Launch(os.Args[1:])
 }
