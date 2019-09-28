@@ -22,7 +22,7 @@
     <copy file="${extract.path}\$TEMP\tap-windows.exe" todir="${extract.path}"/>
 
     <delete>
-      <fileset dir="${extract.path}\bin" includes="**/openvpnserv*.exe"/>
+      <fileset dir="${extract.path}\bin" defaultexcludes="no" includes="**/openvpnserv*.exe"/>
     </delete>
     <delete dir="${extract.path}\$PLUGINSDIR"/>
     <delete dir="${extract.path}\$TEMP"/>
@@ -33,7 +33,7 @@
       <equals arg1="${atf.arch}" arg2="win32"/>
       <then>
         <delete>
-          <fileset dir="${extract.path}\bin" includes="**/*-x64.dll"/>
+          <fileset dir="${extract.path}\bin" defaultexcludes="no" includes="**/*-x64.dll"/>
         </delete>
         <rename src="${extract.path}\bin\libcrypto-1_1.dll" dest="${extract.path}\bin\libcrypto-1.dll"/>
         <rename src="${extract.path}\bin\liblzo2-2_1.dll" dest="${extract.path}\bin\liblzo2-2.dll"/>
@@ -45,8 +45,8 @@
       </then>
       <else>
         <delete>
-          <fileset dir="${extract.path}\bin" includes="**/*_1.dll"/>
-          <fileset dir="${extract.path}\bin" includes="**/*_1.exe"/>
+          <fileset dir="${extract.path}\bin" defaultexcludes="no" includes="**/*_1.dll"/>
+          <fileset dir="${extract.path}\bin" defaultexcludes="no" includes="**/*_1.exe"/>
         </delete>
       </else>
     </if>
