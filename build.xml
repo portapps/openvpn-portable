@@ -72,6 +72,8 @@
     <assertfile file="${extract.path}\win10\${setup.win10.assertextract}"/>
 
     <prepare-openvpn path="${extract.path}\win10"/>
+
+    <move file="${setup.win10.original}" tofile="${release.path}\${setup.win10.filename}${setup.win10.ext}" overwrite="true"/>
   </target>
 
 </project>
