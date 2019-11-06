@@ -16,40 +16,62 @@
   <!-- Targets -->
   <target name="release" depends="release.app" description="Release"/>
 
+  <macrodef name="prepare-openvpn">
+    <attribute name="path"/>
+    <sequential>
+      <copy file="@{path}\$TEMP\tap-windows.exe" todir="@{path}"/>
+
+      <delete>
+        <fileset dir="@{path}\bin" defaultexcludes="no" includes="**/openvpnserv*.exe"/>
+      </delete>
+      <delete dir="@{path}\$PLUGINSDIR"/>
+      <delete dir="@{path}\$TEMP"/>
+      <delete dir="@{path}\easy-rsa"/>
+      <delete file="@{path}\Uninstall.exe.nsis"/>
+
+      <if>
+        <equals arg1="${atf.arch}" arg2="win32"/>
+        <then>
+          <delete>
+            <fileset dir="@{path}\bin" defaultexcludes="no" includes="**/*-x64.dll"/>
+          </delete>
+          <move file="@{path}\bin\libcrypto-1_1.dll" tofile="@{path}\bin\libcrypto-1.dll"/>
+          <move file="@{path}\bin\liblzo2-2_1.dll" tofile="@{path}\bin\liblzo2-2.dll"/>
+          <move file="@{path}\bin\libpkcs11-helper-1_1.dll" tofile="@{path}\bin\libpkcs11-helper-1.dll"/>
+          <move file="@{path}\bin\libssl-1_1.dll" tofile="@{path}\bin\libssl-1.dll"/>
+          <move file="@{path}\bin\openssl_1.exe" tofile="@{path}\bin\openssl.exe"/>
+          <move file="@{path}\bin\openvpn_1.exe" tofile="@{path}\bin\openvpn.exe"/>
+          <move file="@{path}\bin\openvpn-gui_1.exe" tofile="@{path}\bin\openvpn-gui.exe"/>
+        </then>
+        <else>
+          <delete>
+            <fileset dir="@{path}\bin" defaultexcludes="no" includes="**/*_1.dll"/>
+            <fileset dir="@{path}\bin" defaultexcludes="no" includes="**/*_1.exe"/>
+          </delete>
+        </else>
+      </if>
+    </sequential>
+  </macrodef>
+
   <target name="prepare">
     <echo message="Preparing release..."/>
 
-    <copy file="${extract.path}\$TEMP\tap-windows.exe" todir="${extract.path}"/>
+    <!-- Win7 -->
+    <prepare-openvpn path="${extract.path}"/>
+    <move todir="${extract.path}\win7">
+      <fileset dir="${extract.path}" defaultexcludes="no"/>
+    </move>
 
-    <delete>
-      <fileset dir="${extract.path}\bin" defaultexcludes="no" includes="**/openvpnserv*.exe"/>
-    </delete>
-    <delete dir="${extract.path}\$PLUGINSDIR"/>
-    <delete dir="${extract.path}\$TEMP"/>
-    <delete dir="${extract.path}\easy-rsa"/>
-    <delete file="${extract.path}\Uninstall.exe.nsis"/>
+    <!-- Win10 -->
+    <echo message="Downloading ${atf.id} (win10)..."/>
+    <property name="setup.win10.original" location="${tmp.path}\${setup.win10.filename}${setup.win10.ext}"/>
+    <get dest="${setup.win10.original}" src="${setup.win10.url}" skipexisting="true" verbose="on"/>
 
-    <if>
-      <equals arg1="${atf.arch}" arg2="win32"/>
-      <then>
-        <delete>
-          <fileset dir="${extract.path}\bin" defaultexcludes="no" includes="**/*-x64.dll"/>
-        </delete>
-        <rename src="${extract.path}\bin\libcrypto-1_1.dll" dest="${extract.path}\bin\libcrypto-1.dll"/>
-        <rename src="${extract.path}\bin\liblzo2-2_1.dll" dest="${extract.path}\bin\liblzo2-2.dll"/>
-        <rename src="${extract.path}\bin\libpkcs11-helper-1_1.dll" dest="${extract.path}\bin\libpkcs11-helper-1.dll"/>
-        <rename src="${extract.path}\bin\libssl-1_1.dll" dest="${extract.path}\bin\libssl-1.dll"/>
-        <rename src="${extract.path}\bin\openssl_1.exe" dest="${extract.path}\bin\openssl.exe"/>
-        <rename src="${extract.path}\bin\openvpn_1.exe" dest="${extract.path}\bin\openvpn.exe"/>
-        <rename src="${extract.path}\bin\openvpn-gui_1.exe" dest="${extract.path}\bin\openvpn-gui.exe"/>
-      </then>
-      <else>
-        <delete>
-          <fileset dir="${extract.path}\bin" defaultexcludes="no" includes="**/*_1.dll"/>
-          <fileset dir="${extract.path}\bin" defaultexcludes="no" includes="**/*_1.exe"/>
-        </delete>
-      </else>
-    </if>
+    <echo message="Extracting ${setup.win10.original}..."/>
+    <sevenzip-x src="${setup.win10.original}" dest="${extract.path}\win10" overwrite="${archive.extract.overwrite}"/>
+    <assertfile file="${extract.path}\win10\${setup.win10.assertextract}"/>
+
+    <prepare-openvpn path="${extract.path}\win10"/>
   </target>
 
 </project>

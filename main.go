@@ -26,14 +26,20 @@ func init() {
 
 func main() {
 	utl.CreateFolder(app.DataPath)
-	app.Process = utl.PathJoin(app.AppPath, "bin", "openvpn-gui.exe")
+
+	appPath := utl.PathJoin(app.AppPath, "win10")
+	if WinVersion.Major < 10 {
+		appPath = utl.PathJoin(app.AppPath, "win7")
+	}
+
+	app.Process = utl.PathJoin(appPath, "bin", "openvpn-gui.exe")
 
 	configPath := utl.CreateFolder(app.DataPath, "config")
 	logPath := utl.CreateFolder(app.DataPath, "log")
 
 	app.Args = []string{
 		"--exe_path",
-		utl.PathJoin(app.AppPath, "bin", "openvpn.exe"),
+		utl.PathJoin(appPath, "bin", "openvpn.exe"),
 		"--config_dir",
 		configPath,
 		"--ext_string",
