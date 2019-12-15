@@ -4,6 +4,7 @@ package main
 
 import (
 	"os"
+	"path"
 	"runtime"
 
 	. "github.com/portapps/portapps"
@@ -11,15 +12,25 @@ import (
 	"github.com/portapps/portapps/pkg/utl"
 )
 
+type config struct {
+	Cleanup bool `yaml:"cleanup" mapstructure:"cleanup"`
+}
+
 var (
 	app *App
+	cfg *config
 )
 
 func init() {
 	var err error
 
+	// Default config
+	cfg = &config{
+		Cleanup: false,
+	}
+
 	// Init app
-	if app, err = New("openvpn-portable", "OpenVPN"); err != nil {
+	if app, err = NewWithCfg("openvpn-portable", "OpenVPN", cfg); err != nil {
 		Log.Fatal().Err(err).Msg("Cannot initialize application. See log file for more info.")
 	}
 }
@@ -50,6 +61,15 @@ func main() {
 		"NORMAL_PRIORITY_CLASS",
 		"--append_string",
 		"0",
+	}
+
+	// Cleanup on exit
+	if cfg.Cleanup {
+		defer func() {
+			utl.Cleanup([]string{
+				path.Join(os.Getenv("USERPROFILE"), "OpenVPN"),
+			})
+		}()
 	}
 
 	// Add OpenVPN reg key otherwise a dialog popup
