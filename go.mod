@@ -2,4 +2,4 @@ module github.com/portapps/openvpn-portable
 
 go 1.12
 
-require github.com/portapps/portapps v1.30.1
+require github.com/portapps/portapps v1.31.0
