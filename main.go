@@ -7,9 +7,10 @@ import (
 	"path"
 	"runtime"
 
-	. "github.com/portapps/portapps"
-	"github.com/portapps/portapps/pkg/registry"
-	"github.com/portapps/portapps/pkg/utl"
+	"github.com/portapps/portapps/v2"
+	"github.com/portapps/portapps/v2/pkg/log"
+	"github.com/portapps/portapps/v2/pkg/registry"
+	"github.com/portapps/portapps/v2/pkg/utl"
 )
 
 type config struct {
@@ -17,7 +18,7 @@ type config struct {
 }
 
 var (
-	app *App
+	app *portapps.App
 	cfg *config
 )
 
@@ -30,8 +31,8 @@ func init() {
 	}
 
 	// Init app
-	if app, err = NewWithCfg("openvpn-portable", "OpenVPN", cfg); err != nil {
-		Log.Fatal().Err(err).Msg("Cannot initialize application. See log file for more info.")
+	if app, err = portapps.NewWithCfg("openvpn-portable", "OpenVPN", cfg); err != nil {
+		log.Fatal().Err(err).Msg("Cannot initialize application. See log file for more info.")
 	}
 }
 
@@ -39,7 +40,7 @@ func main() {
 	utl.CreateFolder(app.DataPath)
 
 	appPath := utl.PathJoin(app.AppPath, "win10")
-	if WinVersion.Major < 10 {
+	if app.WinVersion.Major < 10 {
 		appPath = utl.PathJoin(app.AppPath, "win7")
 	}
 
@@ -81,23 +82,23 @@ func main() {
 		Key:  `HKLM\SOFTWARE\OpenVPN`,
 		Arch: regArch,
 	}, true); err != nil {
-		Log.Error().Err(err).Msg("Cannot add registry key")
+		log.Error().Err(err).Msg("Cannot add registry key")
 	}
 
 	regsPath := utl.CreateFolder(app.RootPath, "reg")
-	guiRegKey := registry.ExportImport{
+	guiRegFile := utl.PathJoin(regsPath, "OpenVPN-GUI.reg")
+	guiRegKey := registry.Key{
 		Key:  `HKCU\Software\OpenVPN-GUI`,
 		Arch: "32",
-		File: utl.PathJoin(regsPath, "OpenVPN-GUI.reg"),
 	}
 
-	if err := registry.ImportKey(guiRegKey); err != nil {
-		Log.Error().Err(err).Msg("Cannot import registry key")
+	if err := registry.Import(guiRegKey, guiRegFile); err != nil {
+		log.Error().Err(err).Msg("Cannot import registry key")
 	}
 
 	defer func() {
-		if err := registry.ExportKey(guiRegKey); err != nil {
-			Log.Error().Err(err).Msg("Cannot export registry key")
+		if err := registry.Export(guiRegKey, guiRegFile); err != nil {
+			log.Error().Err(err).Msg("Cannot export registry key")
 		}
 	}()
 
