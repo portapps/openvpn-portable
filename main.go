@@ -78,27 +78,35 @@ func main() {
 	if runtime.GOARCH == "amd64" {
 		regArch = "64"
 	}
-	if err := registry.Add(registry.Key{
+	mainRegKey := registry.Key{
 		Key:  `HKLM\SOFTWARE\OpenVPN`,
 		Arch: regArch,
-	}, true); err != nil {
+	}
+	if err := mainRegKey.Add(true); err != nil {
 		log.Error().Err(err).Msg("Cannot add registry key")
 	}
 
-	regsPath := utl.CreateFolder(app.RootPath, "reg")
-	guiRegFile := utl.PathJoin(regsPath, "OpenVPN-GUI.reg")
-	guiRegKey := registry.Key{
+	regFile := utl.PathJoin(utl.CreateFolder(app.RootPath, "reg"), "OpenVPN-GUI.reg")
+	regKey := registry.Key{
 		Key:  `HKCU\Software\OpenVPN-GUI`,
 		Arch: "32",
 	}
 
-	if err := registry.Import(guiRegKey, guiRegFile); err != nil {
+	if err := regKey.Import(regFile); err != nil {
 		log.Error().Err(err).Msg("Cannot import registry key")
 	}
 
 	defer func() {
-		if err := registry.Export(guiRegKey, guiRegFile); err != nil {
+		if err := regKey.Export(regFile); err != nil {
 			log.Error().Err(err).Msg("Cannot export registry key")
+		}
+		if cfg.Cleanup {
+			if err := mainRegKey.Delete(true); err != nil {
+				log.Error().Err(err).Msg("Cannot remove registry key")
+			}
+			if err := regKey.Delete(true); err != nil {
+				log.Error().Err(err).Msg("Cannot remove registry key")
+			}
 		}
 	}()
 
