@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.9-I601-8 (2020/04/25)
+
+* OpenVPN 2.4.9-I601
+* Fix registry import (#4)
+* Portapps 2.2.2
+
 ## 2.4.8-I602-7 (2019/11/06)
 
 * OpenVPN 2.4.8-I602

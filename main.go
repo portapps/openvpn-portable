@@ -45,6 +45,7 @@ func main() {
 	}
 
 	app.Process = utl.PathJoin(appPath, "bin", "openvpn-gui.exe")
+	app.WorkingDir = appPath
 
 	configPath := utl.CreateFolder(app.DataPath, "config")
 	logPath := utl.CreateFolder(app.DataPath, "log")
@@ -79,8 +80,9 @@ func main() {
 		regArch = "64"
 	}
 	mainRegKey := registry.Key{
-		Key:  `HKLM\SOFTWARE\OpenVPN`,
-		Arch: regArch,
+		Key:     `HKLM\SOFTWARE\OpenVPN`,
+		Arch:    regArch,
+		Default: appPath,
 	}
 	if err := mainRegKey.Add(true); err != nil {
 		log.Error().Err(err).Msg("Cannot add registry key")
