@@ -4,6 +4,7 @@
 
 * OpenVPN 2.4.9-I601
 * Fix registry import (#4)
+* Add `cleanup` config
 * Portapps 2.2.2
 
 ## 2.4.8-I602-7 (2019/11/06)
